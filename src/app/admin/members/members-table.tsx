@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { cardClass, approveButtonClass, rejectButtonClass, neutralButtonClass } from "@/lib/styles";
 
 type Member = {
   id: string;
@@ -13,11 +14,11 @@ type Member = {
   status: "PENDING" | "ACTIVE" | "REJECTED" | "SUSPENDED";
 };
 
-const STATUS_STYLES: Record<string, string> = {
-  PENDING: "bg-amber-100 text-amber-800",
-  ACTIVE: "bg-green-100 text-green-800",
-  REJECTED: "bg-red-100 text-red-800",
-  SUSPENDED: "bg-slate-200 text-slate-700",
+const STATUS_STYLES: Record<string, { bg: string; border: string; text: string }> = {
+  PENDING: { bg: "var(--color-warning-bg)", border: "var(--color-warning-border)", text: "var(--color-warning)" },
+  ACTIVE: { bg: "var(--color-success-bg)", border: "var(--color-success-border)", text: "var(--color-success)" },
+  REJECTED: { bg: "var(--color-danger-bg)", border: "var(--color-danger-border)", text: "var(--color-danger)" },
+  SUSPENDED: { bg: "var(--color-neutral-bg)", border: "var(--color-neutral-border)", text: "var(--color-neutral)" },
 };
 
 export function MembersTable({ members }: { members: Member[] }) {
@@ -36,77 +37,83 @@ export function MembersTable({ members }: { members: Member[] }) {
   }
 
   return (
-    <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
-      <table className="min-w-full divide-y divide-slate-200 text-sm">
-        <thead className="bg-slate-50">
+    <div className={`overflow-hidden ${cardClass}`}>
+      <table className="min-w-full divide-y divide-[var(--color-border)] text-sm">
+        <thead className="bg-[var(--color-surface-muted)]">
           <tr>
-            <th className="px-4 py-2 text-left font-medium text-slate-500">Name</th>
-            <th className="px-4 py-2 text-left font-medium text-slate-500">Email</th>
-            <th className="px-4 py-2 text-left font-medium text-slate-500">Department</th>
-            <th className="px-4 py-2 text-left font-medium text-slate-500">Employee ID</th>
-            <th className="px-4 py-2 text-left font-medium text-slate-500">Status</th>
-            <th className="px-4 py-2" />
+            <th className="px-4 py-2.5 text-left font-semibold text-[var(--color-text-muted)]">Name</th>
+            <th className="px-4 py-2.5 text-left font-semibold text-[var(--color-text-muted)]">Email</th>
+            <th className="px-4 py-2.5 text-left font-semibold text-[var(--color-text-muted)]">Department</th>
+            <th className="px-4 py-2.5 text-left font-semibold text-[var(--color-text-muted)]">Employee ID</th>
+            <th className="px-4 py-2.5 text-left font-semibold text-[var(--color-text-muted)]">Status</th>
+            <th className="px-4 py-2.5" />
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-100">
+        <tbody className="divide-y divide-[var(--color-border)]">
           {members.length === 0 && (
             <tr>
-              <td colSpan={6} className="px-4 py-6 text-center text-slate-400">
+              <td colSpan={6} className="px-4 py-6 text-center text-[var(--color-text-faint)]">
                 No members found.
               </td>
             </tr>
           )}
-          {members.map((m) => (
-            <tr key={m.id}>
-              <td className="px-4 py-2 font-medium text-slate-900">{m.name}</td>
-              <td className="px-4 py-2 text-slate-600">{m.email}</td>
-              <td className="px-4 py-2 text-slate-600">{m.department ?? "—"}</td>
-              <td className="px-4 py-2 text-slate-600">{m.employeeId ?? "—"}</td>
-              <td className="px-4 py-2">
-                <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_STYLES[m.status]}`}>
-                  {m.status}
-                </span>
-              </td>
-              <td className="space-x-2 px-4 py-2 text-right">
-                {m.status === "PENDING" && (
-                  <>
+          {members.map((m) => {
+            const s = STATUS_STYLES[m.status];
+            return (
+              <tr key={m.id} className="hover:bg-[var(--color-surface-muted)]">
+                <td className="px-4 py-2.5 font-medium text-[var(--color-text)]">{m.name}</td>
+                <td className="px-4 py-2.5 text-[var(--color-text-muted)]">{m.email}</td>
+                <td className="px-4 py-2.5 text-[var(--color-text-muted)]">{m.department ?? "—"}</td>
+                <td className="px-4 py-2.5 text-[var(--color-text-muted)]">{m.employeeId ?? "—"}</td>
+                <td className="px-4 py-2.5">
+                  <span
+                    className="inline-block rounded-full border px-2.5 py-0.5 text-xs font-semibold"
+                    style={{ backgroundColor: s.bg, borderColor: s.border, color: s.text }}
+                  >
+                    {m.status}
+                  </span>
+                </td>
+                <td className="space-x-2 px-4 py-2.5 text-right">
+                  {m.status === "PENDING" && (
+                    <>
+                      <button
+                        disabled={busyId === m.id}
+                        onClick={() => updateStatus(m.id, "ACTIVE")}
+                        className={approveButtonClass}
+                      >
+                        Approve
+                      </button>
+                      <button
+                        disabled={busyId === m.id}
+                        onClick={() => updateStatus(m.id, "REJECTED")}
+                        className={rejectButtonClass}
+                      >
+                        Reject
+                      </button>
+                    </>
+                  )}
+                  {m.status === "ACTIVE" && (
+                    <button
+                      disabled={busyId === m.id}
+                      onClick={() => updateStatus(m.id, "SUSPENDED")}
+                      className={neutralButtonClass}
+                    >
+                      Suspend
+                    </button>
+                  )}
+                  {(m.status === "SUSPENDED" || m.status === "REJECTED") && (
                     <button
                       disabled={busyId === m.id}
                       onClick={() => updateStatus(m.id, "ACTIVE")}
-                      className="text-xs font-medium text-green-700 hover:underline disabled:opacity-50"
+                      className={approveButtonClass}
                     >
-                      Approve
+                      Reactivate
                     </button>
-                    <button
-                      disabled={busyId === m.id}
-                      onClick={() => updateStatus(m.id, "REJECTED")}
-                      className="text-xs font-medium text-red-600 hover:underline disabled:opacity-50"
-                    >
-                      Reject
-                    </button>
-                  </>
-                )}
-                {m.status === "ACTIVE" && (
-                  <button
-                    disabled={busyId === m.id}
-                    onClick={() => updateStatus(m.id, "SUSPENDED")}
-                    className="text-xs font-medium text-slate-600 hover:underline disabled:opacity-50"
-                  >
-                    Suspend
-                  </button>
-                )}
-                {(m.status === "SUSPENDED" || m.status === "REJECTED") && (
-                  <button
-                    disabled={busyId === m.id}
-                    onClick={() => updateStatus(m.id, "ACTIVE")}
-                    className="text-xs font-medium text-green-700 hover:underline disabled:opacity-50"
-                  >
-                    Reactivate
-                  </button>
-                )}
-              </td>
-            </tr>
-          ))}
+                  )}
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>

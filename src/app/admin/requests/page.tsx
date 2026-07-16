@@ -26,16 +26,16 @@ export default async function AdminRequestsPage({
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold text-slate-900">Leave requests</h1>
+        <h1 className="text-2xl font-semibold text-[var(--color-text)]">Leave requests</h1>
         <div className="flex gap-2">
           {FILTERS.map((f) => (
             <Link
               key={f.value}
               href={f.value ? `/admin/requests?status=${f.value}` : "/admin/requests?status="}
-              className={`rounded-md px-3 py-1.5 text-sm ${
+              className={`rounded-md px-3 py-1.5 text-sm font-medium ${
                 activeStatus === f.value
-                  ? "bg-blue-600 text-white"
-                  : "border border-slate-300 text-slate-600 hover:bg-slate-50"
+                  ? "bg-[var(--color-accent)] text-white"
+                  : "border border-[var(--color-border-strong)] text-[var(--color-text-muted)] hover:bg-[var(--color-surface-muted)]"
               }`}
             >
               {f.label}

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { inputClass, labelClass, primaryButtonClass, errorBannerClass, warningBannerClass } from "@/lib/styles";
 
 type LeaveType = { id: string; code: string; name: string };
 
@@ -64,19 +65,19 @@ export default function NewLeaveRequestPage() {
 
   return (
     <div className="max-w-lg">
-      <h1 className="text-xl font-semibold text-slate-900">Submit a leave / absence request</h1>
-      <p className="mt-1 text-sm text-slate-500">
+      <h1 className="text-2xl font-semibold text-[var(--color-text)]">Submit a leave / absence request</h1>
+      <p className="mt-1 text-sm text-[var(--color-text-muted)]">
         Your request goes to an administrator for approval before it&apos;s recorded.
       </p>
 
       <form onSubmit={handleSubmit} className="mt-6 space-y-4">
         <div>
-          <label className="block text-sm font-medium text-slate-700">Leave type</label>
+          <label className={labelClass}>Leave type</label>
           <select
             required
             value={form.leaveTypeId}
             onChange={(e) => update("leaveTypeId", e.target.value)}
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className={inputClass}
           >
             <option value="" disabled>
               Select a type
@@ -91,52 +92,44 @@ export default function NewLeaveRequestPage() {
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700">Start date</label>
+            <label className={labelClass}>Start date</label>
             <input
               type="date"
               required
               value={form.startDate}
               onChange={(e) => update("startDate", e.target.value)}
-              className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className={inputClass}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700">
-              End date <span className="text-slate-400">(same day if blank)</span>
+            <label className={labelClass}>
+              End date <span className="text-[var(--color-text-faint)]">(same day if blank)</span>
             </label>
             <input
               type="date"
               value={form.endDate}
               min={form.startDate}
               onChange={(e) => update("endDate", e.target.value)}
-              className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className={inputClass}
             />
           </div>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-slate-700">Reason</label>
+          <label className={labelClass}>Reason</label>
           <textarea
             required
             rows={3}
             value={form.reason}
             onChange={(e) => update("reason", e.target.value)}
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className={inputClass}
           />
         </div>
 
-        {error && <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
-        {warning && (
-          <p className="rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-800">
-            {warning} Redirecting to your history…
-          </p>
-        )}
+        {error && <p className={errorBannerClass}>{error}</p>}
+        {warning && <p className={warningBannerClass}>{warning} Redirecting to your history…</p>}
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full rounded-md bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-60"
-        >
+        <button type="submit" disabled={loading} className={`w-full ${primaryButtonClass}`}>
           {loading ? "Submitting..." : "Submit request"}
         </button>
       </form>

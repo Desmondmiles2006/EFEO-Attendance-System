@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { StatusBadge } from "@/components/status-badge";
+import { cardClass, rejectButtonClass } from "@/lib/styles";
 
 type Row = {
   id: string;
@@ -25,47 +26,48 @@ export function HistoryTable({ rows }: { rows: Row[] }) {
   }
 
   return (
-    <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
-      <table className="min-w-full divide-y divide-slate-200 text-sm">
-        <thead className="bg-slate-50">
+    <div className={`overflow-hidden ${cardClass}`}>
+      <table className="min-w-full divide-y divide-[var(--color-border)] text-sm">
+        <thead className="bg-[var(--color-surface-muted)]">
           <tr>
-            <th className="px-4 py-2 text-left font-medium text-slate-500">Type</th>
-            <th className="px-4 py-2 text-left font-medium text-slate-500">Dates</th>
-            <th className="px-4 py-2 text-left font-medium text-slate-500">Reason</th>
-            <th className="px-4 py-2 text-left font-medium text-slate-500">Status</th>
-            <th className="px-4 py-2" />
+            <th className="px-4 py-2.5 text-left font-semibold text-[var(--color-text-muted)]">Type</th>
+            <th className="px-4 py-2.5 text-left font-semibold text-[var(--color-text-muted)]">Dates</th>
+            <th className="px-4 py-2.5 text-left font-semibold text-[var(--color-text-muted)]">Reason</th>
+            <th className="px-4 py-2.5 text-left font-semibold text-[var(--color-text-muted)]">Status</th>
+            <th className="px-4 py-2.5" />
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-100">
+        <tbody className="divide-y divide-[var(--color-border)]">
           {rows.length === 0 && (
             <tr>
-              <td colSpan={5} className="px-4 py-6 text-center text-slate-400">
+              <td colSpan={5} className="px-4 py-6 text-center text-[var(--color-text-faint)]">
                 No requests this year.
               </td>
             </tr>
           )}
           {rows.map((r) => (
-            <tr key={r.id}>
-              <td className="px-4 py-2">
-                {r.leaveType.code} <span className="text-slate-400">— {r.leaveType.name}</span>
+            <tr key={r.id} className="hover:bg-[var(--color-surface-muted)]">
+              <td className="px-4 py-2.5 font-medium text-[var(--color-text)]">
+                {r.leaveType.code}{" "}
+                <span className="font-normal text-[var(--color-text-faint)]">— {r.leaveType.name}</span>
               </td>
-              <td className="px-4 py-2 text-slate-600">
+              <td className="px-4 py-2.5 text-[var(--color-text-muted)]">
                 {new Date(r.startDate).toDateString() === new Date(r.endDate).toDateString()
                   ? new Date(r.startDate).toLocaleDateString()
                   : `${new Date(r.startDate).toLocaleDateString()} – ${new Date(r.endDate).toLocaleDateString()}`}
               </td>
-              <td className="max-w-xs truncate px-4 py-2 text-slate-600" title={r.reason}>
+              <td className="max-w-xs truncate px-4 py-2.5 text-[var(--color-text-muted)]" title={r.reason}>
                 {r.reason}
               </td>
-              <td className="px-4 py-2">
+              <td className="px-4 py-2.5">
                 <StatusBadge status={r.status} />
               </td>
-              <td className="px-4 py-2 text-right">
+              <td className="px-4 py-2.5 text-right">
                 {r.status === "PENDING" && (
                   <button
                     onClick={() => cancel(r.id)}
                     disabled={cancellingId === r.id}
-                    className="text-xs font-medium text-red-600 hover:underline disabled:opacity-50"
+                    className={rejectButtonClass}
                   >
                     Cancel
                   </button>

@@ -3,6 +3,8 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { getUserBalances } from "@/lib/balance";
 import { StatusBadge } from "@/components/status-badge";
+import { QuotaCard } from "@/components/quota-card";
+import { cardClass, primaryButtonClass } from "@/lib/styles";
 
 export default async function DashboardOverview() {
   const session = await auth();
@@ -22,65 +24,52 @@ export default async function DashboardOverview() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-xl font-semibold text-slate-900">Overview</h1>
-        <p className="mt-1 text-sm text-slate-500">Your leave balances for {year}</p>
+        <h1 className="text-2xl font-semibold text-[var(--color-text)]">Overview</h1>
+        <p className="mt-1 text-sm text-[var(--color-text-muted)]">Your leave balances for {year}</p>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        {balances.map((b) => {
-          const over = b.remaining < 0;
-          return (
-            <div
-              key={b.group}
-              className={`rounded-lg border p-4 ${over ? "border-red-300 bg-red-50" : "border-slate-200 bg-white"}`}
-            >
-              <p className="text-sm font-medium text-slate-500">{b.group}</p>
-              <p className="mt-1 text-2xl font-semibold text-slate-900">
-                {b.used} <span className="text-base font-normal text-slate-400">/ {b.quota} days</span>
-              </p>
-              <p className={`mt-1 text-xs ${over ? "text-red-600" : "text-slate-500"}`}>
-                {over ? `${Math.abs(b.remaining)} day(s) over quota` : `${b.remaining} day(s) remaining`}
-              </p>
-            </div>
-          );
-        })}
+        {balances.map((b) => (
+          <QuotaCard key={b.group} group={b.group} used={b.used} quota={b.quota} remaining={b.remaining} />
+        ))}
       </div>
 
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-slate-900">Recent requests</h2>
-        <Link href="/dashboard/leave/new" className="text-sm font-medium text-blue-600 hover:underline">
+        <h2 className="text-lg font-semibold text-[var(--color-text)]">Recent requests</h2>
+        <Link href="/dashboard/leave/new" className={primaryButtonClass}>
           + Submit new request
         </Link>
       </div>
 
-      <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
-        <table className="min-w-full divide-y divide-slate-200 text-sm">
-          <thead className="bg-slate-50">
+      <div className={`overflow-hidden ${cardClass}`}>
+        <table className="min-w-full divide-y divide-[var(--color-border)] text-sm">
+          <thead className="bg-[var(--color-surface-muted)]">
             <tr>
-              <th className="px-4 py-2 text-left font-medium text-slate-500">Type</th>
-              <th className="px-4 py-2 text-left font-medium text-slate-500">Dates</th>
-              <th className="px-4 py-2 text-left font-medium text-slate-500">Status</th>
+              <th className="px-4 py-2.5 text-left font-semibold text-[var(--color-text-muted)]">Type</th>
+              <th className="px-4 py-2.5 text-left font-semibold text-[var(--color-text-muted)]">Dates</th>
+              <th className="px-4 py-2.5 text-left font-semibold text-[var(--color-text-muted)]">Status</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody className="divide-y divide-[var(--color-border)]">
             {recent.length === 0 && (
               <tr>
-                <td colSpan={3} className="px-4 py-6 text-center text-slate-400">
+                <td colSpan={3} className="px-4 py-6 text-center text-[var(--color-text-faint)]">
                   No requests yet.
                 </td>
               </tr>
             )}
             {recent.map((r) => (
-              <tr key={r.id}>
-                <td className="px-4 py-2">
-                  {r.leaveType.code} <span className="text-slate-400">— {r.leaveType.name}</span>
+              <tr key={r.id} className="hover:bg-[var(--color-surface-muted)]">
+                <td className="px-4 py-2.5 font-medium text-[var(--color-text)]">
+                  {r.leaveType.code}{" "}
+                  <span className="font-normal text-[var(--color-text-faint)]">— {r.leaveType.name}</span>
                 </td>
-                <td className="px-4 py-2 text-slate-600">
+                <td className="px-4 py-2.5 text-[var(--color-text-muted)]">
                   {r.startDate.toDateString() === r.endDate.toDateString()
                     ? r.startDate.toLocaleDateString()
                     : `${r.startDate.toLocaleDateString()} – ${r.endDate.toLocaleDateString()}`}
                 </td>
-                <td className="px-4 py-2">
+                <td className="px-4 py-2.5">
                   <StatusBadge status={r.status} />
                 </td>
               </tr>
