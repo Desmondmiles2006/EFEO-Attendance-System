@@ -1,0 +1,87 @@
+// EFEO Attendance System — Prisma schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  MEMBER
+  ADMIN
+}
+
+enum AccountStatus {
+  PENDING
+  ACTIVE
+  REJECTED
+  SUSPENDED
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+model User {
+  id           String        @id @default(cuid())
+  name         String
+  email        String        @unique
+  passwordHash String
+  employeeId   String?       @unique
+  department   String?
+  role         Role          @default(MEMBER)
+  status       AccountStatus @default(PENDING)
+  joinDate     DateTime      @default(now())
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  leaveRequests    LeaveRequest[] @relation("RequesterLeaveRequests")
+  reviewedRequests LeaveRequest[] @relation("ReviewerLeaveRequests")
+
+  @@index([status])
+  @@index([department])
+}
+
+model LeaveType {
+  id           String  @id @default(cuid())
+  code         String  @unique
+  name         String
+  color        String
+  /// Groups codes that share one annual quota, e.g. CL/CL1/CL2 -> "CL". Null = not quota-tracked.
+  quotaGroup   String?
+  /// How many days of the group's quota one request of this type consumes (half-day codes use 0.5).
+  quotaWeight  Float   @default(1)
+  selectable   Boolean @default(true)
+  sortOrder    Int     @default(0)
+
+  leaveRequests LeaveRequest[]
+}
+
+model LeaveRequest {
+  id          String         @id @default(cuid())
+  userId      String
+  leaveTypeId String
+  startDate   DateTime
+  endDate     DateTime
+  reason      String
+  status      RequestStatus  @default(PENDING)
+  reviewedById String?
+  reviewedAt  DateTime?
+  reviewNote  String?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  user       User      @relation("RequesterLeaveRequests", fields: [userId], references: [id], onDelete: Cascade)
+  leaveType  LeaveType @relation(fields: [leaveTypeId], references: [id])
+  reviewedBy User?     @relation("ReviewerLeaveRequests", fields: [reviewedById], references: [id])
+
+  @@index([userId])
+  @@index([status])
+  @@index([startDate, endDate])
+}
