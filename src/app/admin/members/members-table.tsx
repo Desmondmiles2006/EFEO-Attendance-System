@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { cardClass, approveButtonClass, rejectButtonClass, neutralButtonClass } from "@/lib/styles";
+import { cardClass, approveButtonClass, rejectButtonClass, neutralButtonClass, dangerLinkClass } from "@/lib/styles";
 
 type Member = {
   id: string;
@@ -33,6 +33,25 @@ export function MembersTable({ members }: { members: Member[] }) {
       body: JSON.stringify({ status }),
     });
     setBusyId(null);
+    router.refresh();
+  }
+
+  async function deleteMember(id: string, name: string) {
+    if (
+      !window.confirm(
+        `Permanently delete ${name}'s account? This also deletes their entire leave history. This cannot be undone.`
+      )
+    ) {
+      return;
+    }
+    setBusyId(id);
+    const res = await fetch(`/api/admin/members/${id}`, { method: "DELETE" });
+    setBusyId(null);
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      window.alert(data.error ?? "Could not delete this member.");
+      return;
+    }
     router.refresh();
   }
 
@@ -110,6 +129,13 @@ export function MembersTable({ members }: { members: Member[] }) {
                       Reactivate
                     </button>
                   )}
+                  <button
+                    disabled={busyId === m.id}
+                    onClick={() => deleteMember(m.id, m.name)}
+                    className={dangerLinkClass}
+                  >
+                    Delete
+                  </button>
                 </td>
               </tr>
             );

@@ -25,3 +25,9 @@ export const rejectButtonClass =
 
 export const neutralButtonClass =
   "rounded-md border border-[var(--color-neutral-border)] bg-[var(--color-neutral-bg)] px-2.5 py-1 text-xs font-semibold text-[var(--color-neutral)] hover:opacity-80 disabled:opacity-50";
+
+export const dangerLinkClass =
+  "text-xs font-semibold text-[var(--color-danger)] hover:underline disabled:opacity-50";
+
+export const editLinkClass =
+  "text-xs font-semibold text-[var(--color-accent)] hover:underline disabled:opacity-50";

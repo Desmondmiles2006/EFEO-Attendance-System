@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { StatusBadge } from "@/components/status-badge";
-import { cardClass, approveButtonClass, rejectButtonClass } from "@/lib/styles";
+import { cardClass, approveButtonClass, rejectButtonClass, dangerLinkClass, editLinkClass } from "@/lib/styles";
 
 type Row = {
   id: string;
@@ -28,6 +29,18 @@ export function RequestsTable({ rows }: { rows: Row[] }) {
       body: JSON.stringify({ action, reviewNote: noteDrafts[id] ?? "" }),
     });
     setBusyId(null);
+    router.refresh();
+  }
+
+  async function remove(id: string) {
+    if (!window.confirm("Permanently delete this leave request? This cannot be undone.")) return;
+    setBusyId(id);
+    const res = await fetch(`/api/admin/leave-requests/${id}`, { method: "DELETE" });
+    setBusyId(null);
+    if (!res.ok) {
+      window.alert("Could not delete this request.");
+      return;
+    }
     router.refresh();
   }
 
@@ -84,7 +97,7 @@ export function RequestsTable({ rows }: { rows: Row[] }) {
                   <span className="text-xs text-[var(--color-text-faint)]">—</span>
                 )}
               </td>
-              <td className="space-x-2 px-4 py-2.5 text-right">
+              <td className="space-x-2 whitespace-nowrap px-4 py-2.5 text-right">
                 {r.status === "PENDING" && (
                   <>
                     <button
@@ -103,6 +116,12 @@ export function RequestsTable({ rows }: { rows: Row[] }) {
                     </button>
                   </>
                 )}
+                <Link href={`/admin/requests/${r.id}/edit`} className={editLinkClass}>
+                  Edit
+                </Link>
+                <button disabled={busyId === r.id} onClick={() => remove(r.id)} className={dangerLinkClass}>
+                  Delete
+                </button>
               </td>
             </tr>
           ))}
