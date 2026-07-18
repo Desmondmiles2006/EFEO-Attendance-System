@@ -162,6 +162,7 @@ export async function buildLeaveBalanceSummaryWorkbook(year: number) {
 
   const groups = Object.keys(ANNUAL_QUOTAS);
   const usedByUserGroup: Record<string, Record<string, number>> = {};
+  const compByUser: Record<string, { earned: number; taken: number }> = {};
 
   for (const r of approved) {
     const group = r.leaveType.quotaGroup;
@@ -169,6 +170,14 @@ export async function buildLeaveBalanceSummaryWorkbook(year: number) {
     const start = r.startDate < yearStart ? yearStart : r.startDate;
     const end = r.endDate > yearEnd ? yearEnd : r.endDate;
     const days = daysInclusive(start, end) * r.leaveType.quotaWeight;
+
+    if (group === "COMP") {
+      compByUser[r.userId] ??= { earned: 0, taken: 0 };
+      if (r.leaveType.code === "Co+") compByUser[r.userId].earned += days;
+      else compByUser[r.userId].taken += days;
+      continue;
+    }
+
     usedByUserGroup[r.userId] ??= {};
     usedByUserGroup[r.userId][group] = (usedByUserGroup[r.userId][group] ?? 0) + days;
   }
@@ -180,6 +189,7 @@ export async function buildLeaveBalanceSummaryWorkbook(year: number) {
   for (const g of groups) {
     columns.push(`${g} Used`, `${g} Quota`, `${g} Remaining`);
   }
+  columns.push("COMP Taken", "COMP Earned", "COMP Remaining");
   const headerRow = sheet.addRow(columns);
   styleHeaderRow(headerRow);
 
@@ -190,6 +200,8 @@ export async function buildLeaveBalanceSummaryWorkbook(year: number) {
       const quota = ANNUAL_QUOTAS[g];
       row.push(used, quota, quota - used);
     }
+    const comp = compByUser[m.id] ?? { earned: 0, taken: 0 };
+    row.push(comp.taken, comp.earned, comp.earned - comp.taken);
     sheet.addRow(row);
   }
 

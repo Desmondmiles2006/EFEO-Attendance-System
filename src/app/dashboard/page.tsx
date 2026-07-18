@@ -28,7 +28,7 @@ export default async function DashboardOverview() {
         <p className="mt-1 text-sm text-[var(--color-text-muted)]">Your leave balances for {year}</p>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {balances.map((b) => (
           <QuotaCard key={b.group} group={b.group} used={b.used} quota={b.quota} remaining={b.remaining} />
         ))}

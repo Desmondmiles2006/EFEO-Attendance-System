@@ -2,7 +2,7 @@ import { cardClass } from "@/lib/styles";
 
 export function QuotaCard({ group, used, quota, remaining }: { group: string; used: number; quota: number; remaining: number }) {
   const over = remaining < 0;
-  const pct = Math.min(100, Math.round((used / quota) * 100));
+  const pct = quota > 0 ? Math.min(100, Math.round((used / quota) * 100)) : used > 0 ? 100 : 0;
 
   return (
     <div className={`${cardClass} p-4 ${over ? "border-[var(--color-danger-border)]" : ""}`}>

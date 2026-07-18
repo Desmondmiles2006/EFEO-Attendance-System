@@ -7,6 +7,7 @@ const LINKS = [
   { href: "/admin", label: "Overview" },
   { href: "/admin/members", label: "Members" },
   { href: "/admin/requests", label: "Leave Requests" },
+  { href: "/admin/assign", label: "Assign Leave" },
   { href: "/admin/export", label: "Export" },
 ];
 

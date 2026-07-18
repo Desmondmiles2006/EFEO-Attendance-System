@@ -2,8 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { leaveRequestSchema } from "@/lib/validation";
-import { daysInclusive } from "@/lib/balance";
-import { ANNUAL_QUOTAS } from "@/lib/quotas";
+import { computeQuotaWarning } from "@/lib/quota-warning";
 
 export async function GET(req: Request) {
   const session = await auth();
@@ -60,34 +59,7 @@ export async function POST(req: Request) {
     include: { leaveType: true },
   });
 
-  let warning: string | null = null;
-  if (leaveType.quotaGroup) {
-    const quota = ANNUAL_QUOTAS[leaveType.quotaGroup];
-    const year = start.getFullYear();
-    const yearStart = new Date(year, 0, 1);
-    const yearEnd = new Date(year, 11, 31, 23, 59, 59);
-
-    const approvedSameGroup = await prisma.leaveRequest.findMany({
-      where: {
-        userId: session.user.id,
-        status: { in: ["APPROVED", "PENDING"] },
-        startDate: { lte: yearEnd },
-        endDate: { gte: yearStart },
-        leaveType: { quotaGroup: leaveType.quotaGroup },
-      },
-      include: { leaveType: true },
-    });
-
-    const used = approvedSameGroup.reduce((sum, r) => {
-      const s = r.startDate < yearStart ? yearStart : r.startDate;
-      const e = r.endDate > yearEnd ? yearEnd : r.endDate;
-      return sum + daysInclusive(s, e) * r.leaveType.quotaWeight;
-    }, 0);
-
-    if (used > quota) {
-      warning = `This request puts your ${leaveType.quotaGroup} leave usage at ${used} day(s), above the ${quota}-day annual quota.`;
-    }
-  }
+  const warning = await computeQuotaWarning(session.user.id, leaveType, start);
 
   return NextResponse.json({ request: created, warning });
 }

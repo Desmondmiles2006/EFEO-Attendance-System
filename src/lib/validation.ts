@@ -20,6 +20,19 @@ export const leaveRequestSchema = z
     path: ["endDate"],
   });
 
+export const adminAssignLeaveSchema = z
+  .object({
+    userId: z.string().min(1, "Select a member"),
+    leaveTypeId: z.string().min(1, "Select a leave type"),
+    startDate: z.string().min(1, "Start date is required"),
+    endDate: z.string().min(1, "End date is required"),
+    reason: z.string().trim().min(3, "Please provide a reason").max(1000),
+  })
+  .refine((data) => new Date(data.startDate) <= new Date(data.endDate), {
+    message: "Start date must be before or equal to end date",
+    path: ["endDate"],
+  });
+
 export const reviewSchema = z.object({
   action: z.enum(["APPROVE", "REJECT"]),
   reviewNote: z.string().trim().max(1000).optional().or(z.literal("")),
