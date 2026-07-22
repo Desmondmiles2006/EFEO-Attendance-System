@@ -19,7 +19,11 @@ export default async function AdminRequestsPage({
 
   const requests = await prisma.leaveRequest.findMany({
     where: activeStatus ? { status: activeStatus as "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED" } : undefined,
-    include: { leaveType: true, user: { select: { name: true, email: true, department: true } } },
+    include: {
+      leaveType: true,
+      user: { select: { name: true, email: true, department: true } },
+      project: { select: { name: true } },
+    },
     orderBy: { createdAt: "desc" },
   });
 
@@ -53,6 +57,7 @@ export default async function AdminRequestsPage({
           endDate: r.endDate.toISOString(),
           leaveType: { code: r.leaveType.code, name: r.leaveType.name },
           user: r.user,
+          projectName: r.project?.name ?? null,
         }))}
       />
     </div>

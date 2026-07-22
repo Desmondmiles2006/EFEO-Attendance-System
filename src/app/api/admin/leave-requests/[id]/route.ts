@@ -3,6 +3,7 @@ import { requireAdmin } from "@/lib/require-admin";
 import { prisma } from "@/lib/prisma";
 import { reviewSchema, leaveRequestSchema } from "@/lib/validation";
 import { computeQuotaWarning } from "@/lib/quota-warning";
+import { isValidProjectForUser } from "@/lib/project-check";
 
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await requireAdmin();
@@ -67,6 +68,9 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
   if (!leaveType || !leaveType.selectable) {
     return NextResponse.json({ error: "Invalid leave type" }, { status: 400 });
   }
+  if (!(await isValidProjectForUser(existing.userId, parsed.data.projectId))) {
+    return NextResponse.json({ error: "That member is not assigned to the selected project" }, { status: 400 });
+  }
 
   const start = new Date(parsed.data.startDate);
   const end = new Date(parsed.data.endDate);
@@ -78,6 +82,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       startDate: start,
       endDate: end,
       reason: parsed.data.reason,
+      projectId: parsed.data.projectId,
     },
     include: { leaveType: true, user: { select: { id: true, name: true, email: true, department: true } } },
   });

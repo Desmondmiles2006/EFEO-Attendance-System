@@ -14,6 +14,7 @@ type Row = {
   endDate: string;
   leaveType: { code: string; name: string };
   user: { name: string; email: string; department: string | null };
+  projectName: string | null;
 };
 
 export function RequestsTable({ rows }: { rows: Row[] }) {
@@ -51,6 +52,7 @@ export function RequestsTable({ rows }: { rows: Row[] }) {
           <tr>
             <th className="px-4 py-2.5 text-left font-semibold text-[var(--color-text-muted)]">Member</th>
             <th className="px-4 py-2.5 text-left font-semibold text-[var(--color-text-muted)]">Type</th>
+            <th className="px-4 py-2.5 text-left font-semibold text-[var(--color-text-muted)]">Project</th>
             <th className="px-4 py-2.5 text-left font-semibold text-[var(--color-text-muted)]">Dates</th>
             <th className="px-4 py-2.5 text-left font-semibold text-[var(--color-text-muted)]">Reason</th>
             <th className="px-4 py-2.5 text-left font-semibold text-[var(--color-text-muted)]">Status</th>
@@ -61,7 +63,7 @@ export function RequestsTable({ rows }: { rows: Row[] }) {
         <tbody className="divide-y divide-[var(--color-border)]">
           {rows.length === 0 && (
             <tr>
-              <td colSpan={7} className="px-4 py-6 text-center text-[var(--color-text-faint)]">
+              <td colSpan={8} className="px-4 py-6 text-center text-[var(--color-text-faint)]">
                 No requests found.
               </td>
             </tr>
@@ -73,6 +75,7 @@ export function RequestsTable({ rows }: { rows: Row[] }) {
                 <div className="text-xs text-[var(--color-text-faint)]">{r.user.department ?? r.user.email}</div>
               </td>
               <td className="px-4 py-2.5 font-medium text-[var(--color-text)]">{r.leaveType.code}</td>
+              <td className="px-4 py-2.5 text-[var(--color-text-muted)]">{r.projectName ?? "—"}</td>
               <td className="px-4 py-2.5 text-[var(--color-text-muted)]">
                 {new Date(r.startDate).toDateString() === new Date(r.endDate).toDateString()
                   ? new Date(r.startDate).toLocaleDateString()

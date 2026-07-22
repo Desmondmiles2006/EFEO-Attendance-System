@@ -22,11 +22,13 @@ export default async function EditLeaveRequestPage({ params }: { params: Promise
 
       <EditLeaveForm
         id={request.id}
+        userId={request.userId}
         initial={{
           leaveTypeId: request.leaveTypeId,
           startDate: request.startDate.toISOString().slice(0, 10),
           endDate: request.endDate.toISOString().slice(0, 10),
           reason: request.reason,
+          projectId: request.projectId ?? "",
         }}
       />
     </div>

@@ -6,17 +6,20 @@ import { inputClass, labelClass, primaryButtonClass, errorBannerClass, warningBa
 
 type Member = { id: string; name: string; email: string; department: string | null };
 type LeaveType = { id: string; code: string; name: string };
+type Project = { id: string; name: string };
 
 export default function AssignLeavePage() {
   const router = useRouter();
   const [members, setMembers] = useState<Member[]>([]);
   const [leaveTypes, setLeaveTypes] = useState<LeaveType[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
   const [form, setForm] = useState({
     userId: "",
     leaveTypeId: "",
     startDate: "",
     endDate: "",
     reason: "",
+    projectId: "",
   });
   const [error, setError] = useState<string | null>(null);
   const [warning, setWarning] = useState<string | null>(null);
@@ -31,6 +34,20 @@ export default function AssignLeavePage() {
       .then((res) => res.json())
       .then((data) => setLeaveTypes(data.leaveTypes ?? []));
   }, []);
+
+  // Load the selected member's projects. (projectId is reset in the member onChange handler.)
+  useEffect(() => {
+    if (!form.userId) return;
+    let active = true;
+    fetch(`/api/admin/members/${form.userId}/projects`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (active) setProjects(data.projects ?? []);
+      });
+    return () => {
+      active = false;
+    };
+  }, [form.userId]);
 
   function update<K extends keyof typeof form>(key: K, value: string) {
     setForm((f) => ({ ...f, [key]: value }));
@@ -79,7 +96,12 @@ export default function AssignLeavePage() {
       <form onSubmit={handleSubmit} className="mt-6 space-y-4">
         <div>
           <label className={labelClass}>Member</label>
-          <select required value={form.userId} onChange={(e) => update("userId", e.target.value)} className={inputClass}>
+          <select
+            required
+            value={form.userId}
+            onChange={(e) => setForm((f) => ({ ...f, userId: e.target.value, projectId: "" }))}
+            className={inputClass}
+          >
             <option value="" disabled>
               Select a member
             </option>
@@ -134,6 +156,26 @@ export default function AssignLeavePage() {
             />
           </div>
         </div>
+
+        {form.userId && projects.length > 0 && (
+          <div>
+            <label className={labelClass}>
+              Project <span className="text-[var(--color-text-faint)]">(optional)</span>
+            </label>
+            <select
+              value={form.projectId}
+              onChange={(e) => update("projectId", e.target.value)}
+              className={inputClass}
+            >
+              <option value="">None</option>
+              {projects.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
 
         <div>
           <label className={labelClass}>Reason</label>

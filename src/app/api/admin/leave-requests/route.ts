@@ -3,6 +3,7 @@ import { requireAdmin } from "@/lib/require-admin";
 import { prisma } from "@/lib/prisma";
 import { adminAssignLeaveSchema } from "@/lib/validation";
 import { computeQuotaWarning } from "@/lib/quota-warning";
+import { isValidProjectForUser } from "@/lib/project-check";
 
 export async function GET(req: Request) {
   const session = await requireAdmin();
@@ -33,7 +34,7 @@ export async function POST(req: Request) {
     );
   }
 
-  const { userId, leaveTypeId, startDate, endDate, reason } = parsed.data;
+  const { userId, leaveTypeId, startDate, endDate, reason, projectId } = parsed.data;
 
   const [targetUser, leaveType] = await Promise.all([
     prisma.user.findUnique({ where: { id: userId } }),
@@ -46,6 +47,9 @@ export async function POST(req: Request) {
   if (!leaveType || !leaveType.selectable) {
     return NextResponse.json({ error: "Invalid leave type" }, { status: 400 });
   }
+  if (!(await isValidProjectForUser(userId, projectId))) {
+    return NextResponse.json({ error: "That member is not assigned to the selected project" }, { status: 400 });
+  }
 
   const start = new Date(startDate);
   const end = new Date(endDate);
@@ -57,6 +61,7 @@ export async function POST(req: Request) {
       startDate: start,
       endDate: end,
       reason,
+      projectId,
       status: "APPROVED",
       reviewedById: session.user.id,
       reviewedAt: new Date(),

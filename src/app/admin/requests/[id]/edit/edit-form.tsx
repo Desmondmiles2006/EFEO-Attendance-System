@@ -5,16 +5,20 @@ import { useRouter } from "next/navigation";
 import { inputClass, labelClass, primaryButtonClass, secondaryButtonClass, errorBannerClass, warningBannerClass } from "@/lib/styles";
 
 type LeaveType = { id: string; code: string; name: string };
+type Project = { id: string; name: string };
 
 export function EditLeaveForm({
   id,
+  userId,
   initial,
 }: {
   id: string;
-  initial: { leaveTypeId: string; startDate: string; endDate: string; reason: string };
+  userId: string;
+  initial: { leaveTypeId: string; startDate: string; endDate: string; reason: string; projectId: string };
 }) {
   const router = useRouter();
   const [leaveTypes, setLeaveTypes] = useState<LeaveType[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
   const [form, setForm] = useState(initial);
   const [error, setError] = useState<string | null>(null);
   const [warning, setWarning] = useState<string | null>(null);
@@ -24,7 +28,10 @@ export function EditLeaveForm({
     fetch("/api/leave-types")
       .then((res) => res.json())
       .then((data) => setLeaveTypes(data.leaveTypes ?? []));
-  }, []);
+    fetch(`/api/admin/members/${userId}/projects`)
+      .then((res) => res.json())
+      .then((data) => setProjects(data.projects ?? []));
+  }, [userId]);
 
   function update<K extends keyof typeof form>(key: K, value: string) {
     setForm((f) => ({ ...f, [key]: value }));
@@ -99,6 +106,20 @@ export function EditLeaveForm({
             className={inputClass}
           />
         </div>
+      </div>
+
+      <div>
+        <label className={labelClass}>
+          Project <span className="text-[var(--color-text-faint)]">(optional)</span>
+        </label>
+        <select value={form.projectId} onChange={(e) => update("projectId", e.target.value)} className={inputClass}>
+          <option value="">None</option>
+          {projects.map((p) => (
+            <option key={p.id} value={p.id}>
+              {p.name}
+            </option>
+          ))}
+        </select>
       </div>
 
       <div>

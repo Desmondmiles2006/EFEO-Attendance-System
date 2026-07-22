@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { leaveRequestSchema } from "@/lib/validation";
 import { computeQuotaWarning } from "@/lib/quota-warning";
+import { isValidProjectForUser } from "@/lib/project-check";
 
 export async function GET(req: Request) {
   const session = await auth();
@@ -37,11 +38,15 @@ export async function POST(req: Request) {
     );
   }
 
-  const { leaveTypeId, startDate, endDate, reason } = parsed.data;
+  const { leaveTypeId, startDate, endDate, reason, projectId } = parsed.data;
 
   const leaveType = await prisma.leaveType.findUnique({ where: { id: leaveTypeId } });
   if (!leaveType || !leaveType.selectable) {
     return NextResponse.json({ error: "Invalid leave type" }, { status: 400 });
+  }
+
+  if (!(await isValidProjectForUser(session.user.id, projectId))) {
+    return NextResponse.json({ error: "You are not assigned to that project" }, { status: 400 });
   }
 
   const start = new Date(startDate);
@@ -54,6 +59,7 @@ export async function POST(req: Request) {
       startDate: start,
       endDate: end,
       reason,
+      projectId,
       status: "PENDING",
     },
     include: { leaveType: true },

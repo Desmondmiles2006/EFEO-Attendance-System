@@ -5,15 +5,18 @@ import { useRouter } from "next/navigation";
 import { inputClass, labelClass, primaryButtonClass, errorBannerClass, warningBannerClass } from "@/lib/styles";
 
 type LeaveType = { id: string; code: string; name: string };
+type Project = { id: string; name: string };
 
 export default function NewLeaveRequestPage() {
   const router = useRouter();
   const [leaveTypes, setLeaveTypes] = useState<LeaveType[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
   const [form, setForm] = useState({
     leaveTypeId: "",
     startDate: "",
     endDate: "",
     reason: "",
+    projectId: "",
   });
   const [error, setError] = useState<string | null>(null);
   const [warning, setWarning] = useState<string | null>(null);
@@ -23,6 +26,9 @@ export default function NewLeaveRequestPage() {
     fetch("/api/leave-types")
       .then((res) => res.json())
       .then((data) => setLeaveTypes(data.leaveTypes ?? []));
+    fetch("/api/projects/mine")
+      .then((res) => res.json())
+      .then((data) => setProjects(data.projects ?? []));
   }, []);
 
   function update<K extends keyof typeof form>(key: K, value: string) {
@@ -114,6 +120,26 @@ export default function NewLeaveRequestPage() {
             />
           </div>
         </div>
+
+        {projects.length > 0 && (
+          <div>
+            <label className={labelClass}>
+              Project <span className="text-[var(--color-text-faint)]">(optional)</span>
+            </label>
+            <select
+              value={form.projectId}
+              onChange={(e) => update("projectId", e.target.value)}
+              className={inputClass}
+            >
+              <option value="">None</option>
+              {projects.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
 
         <div>
           <label className={labelClass}>Reason</label>

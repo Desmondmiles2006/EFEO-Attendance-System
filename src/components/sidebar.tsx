@@ -24,7 +24,12 @@ export function Sidebar({
 
       <nav className="flex-1 space-y-1 px-3 py-4">
         {links.map((link) => {
-          const active = pathname === link.href;
+          // Highlight the section when on its page or any sub-path (e.g. /admin/projects/123),
+          // but keep the index link (/admin, /dashboard) exact-match only.
+          const isIndex = link.href === "/admin" || link.href === "/dashboard";
+          const active = isIndex
+            ? pathname === link.href
+            : pathname === link.href || pathname.startsWith(link.href + "/");
           return (
             <Link
               key={link.href}
