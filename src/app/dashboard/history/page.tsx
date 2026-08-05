@@ -18,7 +18,7 @@ export default async function HistoryPage({
       startDate: { gte: new Date(year, 0, 1) },
       endDate: { lte: new Date(year, 11, 31, 23, 59, 59) },
     },
-    include: { leaveType: true },
+    include: { leaveType: true, project: { select: { name: true } } },
     orderBy: { createdAt: "desc" },
   });
 
@@ -40,6 +40,7 @@ export default async function HistoryPage({
           startDate: r.startDate.toISOString(),
           endDate: r.endDate.toISOString(),
           leaveType: { code: r.leaveType.code, name: r.leaveType.name },
+          projectName: r.project?.name ?? null,
         }))}
       />
     </div>

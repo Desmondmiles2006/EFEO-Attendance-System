@@ -12,6 +12,7 @@ type Row = {
   startDate: string;
   endDate: string;
   leaveType: { code: string; name: string };
+  projectName: string | null;
 };
 
 export function HistoryTable({ rows }: { rows: Row[] }) {
@@ -31,6 +32,7 @@ export function HistoryTable({ rows }: { rows: Row[] }) {
         <thead className="bg-[var(--color-surface-muted)]">
           <tr>
             <th className="px-4 py-2.5 text-left font-semibold text-[var(--color-text-muted)]">Type</th>
+            <th className="px-4 py-2.5 text-left font-semibold text-[var(--color-text-muted)]">Project</th>
             <th className="px-4 py-2.5 text-left font-semibold text-[var(--color-text-muted)]">Dates</th>
             <th className="px-4 py-2.5 text-left font-semibold text-[var(--color-text-muted)]">Reason</th>
             <th className="px-4 py-2.5 text-left font-semibold text-[var(--color-text-muted)]">Status</th>
@@ -40,7 +42,7 @@ export function HistoryTable({ rows }: { rows: Row[] }) {
         <tbody className="divide-y divide-[var(--color-border)]">
           {rows.length === 0 && (
             <tr>
-              <td colSpan={5} className="px-4 py-6 text-center text-[var(--color-text-faint)]">
+              <td colSpan={6} className="px-4 py-6 text-center text-[var(--color-text-faint)]">
                 No requests this year.
               </td>
             </tr>
@@ -51,6 +53,7 @@ export function HistoryTable({ rows }: { rows: Row[] }) {
                 {r.leaveType.code}{" "}
                 <span className="font-normal text-[var(--color-text-faint)]">— {r.leaveType.name}</span>
               </td>
+              <td className="px-4 py-2.5 text-[var(--color-text-muted)]">{r.projectName ?? "—"}</td>
               <td className="px-4 py-2.5 text-[var(--color-text-muted)]">
                 {new Date(r.startDate).toDateString() === new Date(r.endDate).toDateString()
                   ? new Date(r.startDate).toLocaleDateString()

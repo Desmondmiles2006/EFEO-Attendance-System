@@ -20,7 +20,24 @@ export default async function AdminMembersPage({
   const members = await prisma.user.findMany({
     where: status ? { status: status as "PENDING" | "ACTIVE" | "REJECTED" | "SUSPENDED" } : undefined,
     orderBy: { createdAt: "desc" },
+    include: {
+      projectMemberships: {
+        include: { project: { select: { name: true } } },
+        orderBy: { project: { name: "asc" } },
+      },
+    },
   });
+
+  const rows = members.map((m) => ({
+    id: m.id,
+    name: m.name,
+    email: m.email,
+    department: m.department,
+    employeeId: m.employeeId,
+    role: m.role,
+    status: m.status,
+    projects: m.projectMemberships.map((pm) => pm.project.name),
+  }));
 
   return (
     <div className="space-y-6">
@@ -43,7 +60,7 @@ export default async function AdminMembersPage({
         </div>
       </div>
 
-      <MembersTable members={members} />
+      <MembersTable members={rows} />
     </div>
   );
 }

@@ -15,7 +15,7 @@ export default async function DashboardOverview() {
     getUserBalances(userId, year),
     prisma.leaveRequest.findMany({
       where: { userId },
-      include: { leaveType: true },
+      include: { leaveType: true, project: { select: { name: true } } },
       orderBy: { createdAt: "desc" },
       take: 5,
     }),
@@ -46,6 +46,7 @@ export default async function DashboardOverview() {
           <thead className="bg-[var(--color-surface-muted)]">
             <tr>
               <th className="px-4 py-2.5 text-left font-semibold text-[var(--color-text-muted)]">Type</th>
+              <th className="px-4 py-2.5 text-left font-semibold text-[var(--color-text-muted)]">Project</th>
               <th className="px-4 py-2.5 text-left font-semibold text-[var(--color-text-muted)]">Dates</th>
               <th className="px-4 py-2.5 text-left font-semibold text-[var(--color-text-muted)]">Status</th>
             </tr>
@@ -53,7 +54,7 @@ export default async function DashboardOverview() {
           <tbody className="divide-y divide-[var(--color-border)]">
             {recent.length === 0 && (
               <tr>
-                <td colSpan={3} className="px-4 py-6 text-center text-[var(--color-text-faint)]">
+                <td colSpan={4} className="px-4 py-6 text-center text-[var(--color-text-faint)]">
                   No requests yet.
                 </td>
               </tr>
@@ -64,6 +65,7 @@ export default async function DashboardOverview() {
                   {r.leaveType.code}{" "}
                   <span className="font-normal text-[var(--color-text-faint)]">— {r.leaveType.name}</span>
                 </td>
+                <td className="px-4 py-2.5 text-[var(--color-text-muted)]">{r.project?.name ?? "—"}</td>
                 <td className="px-4 py-2.5 text-[var(--color-text-muted)]">
                   {r.startDate.toDateString() === r.endDate.toDateString()
                     ? r.startDate.toLocaleDateString()

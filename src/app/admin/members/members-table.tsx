@@ -12,6 +12,7 @@ type Member = {
   employeeId: string | null;
   role: "MEMBER" | "ADMIN";
   status: "PENDING" | "ACTIVE" | "REJECTED" | "SUSPENDED";
+  projects: string[];
 };
 
 const STATUS_STYLES: Record<string, { bg: string; border: string; text: string }> = {
@@ -63,6 +64,7 @@ export function MembersTable({ members }: { members: Member[] }) {
             <th className="px-4 py-2.5 text-left font-semibold text-[var(--color-text-muted)]">Name</th>
             <th className="px-4 py-2.5 text-left font-semibold text-[var(--color-text-muted)]">Email</th>
             <th className="px-4 py-2.5 text-left font-semibold text-[var(--color-text-muted)]">Department</th>
+            <th className="px-4 py-2.5 text-left font-semibold text-[var(--color-text-muted)]">Projects</th>
             <th className="px-4 py-2.5 text-left font-semibold text-[var(--color-text-muted)]">Employee ID</th>
             <th className="px-4 py-2.5 text-left font-semibold text-[var(--color-text-muted)]">Status</th>
             <th className="px-4 py-2.5" />
@@ -71,7 +73,7 @@ export function MembersTable({ members }: { members: Member[] }) {
         <tbody className="divide-y divide-[var(--color-border)]">
           {members.length === 0 && (
             <tr>
-              <td colSpan={6} className="px-4 py-6 text-center text-[var(--color-text-faint)]">
+              <td colSpan={7} className="px-4 py-6 text-center text-[var(--color-text-faint)]">
                 No members found.
               </td>
             </tr>
@@ -83,6 +85,9 @@ export function MembersTable({ members }: { members: Member[] }) {
                 <td className="px-4 py-2.5 font-medium text-[var(--color-text)]">{m.name}</td>
                 <td className="px-4 py-2.5 text-[var(--color-text-muted)]">{m.email}</td>
                 <td className="px-4 py-2.5 text-[var(--color-text-muted)]">{m.department ?? "—"}</td>
+                <td className="px-4 py-2.5 text-[var(--color-text-muted)]">
+                  {m.projects.length ? m.projects.join(", ") : "—"}
+                </td>
                 <td className="px-4 py-2.5 text-[var(--color-text-muted)]">{m.employeeId ?? "—"}</td>
                 <td className="px-4 py-2.5">
                   <span

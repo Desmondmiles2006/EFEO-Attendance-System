@@ -33,7 +33,7 @@ export async function buildMemberRecordWorkbook(userId: string, year: number) {
       startDate: { gte: new Date(year, 0, 1) },
       endDate: { lte: new Date(year, 11, 31, 23, 59, 59) },
     },
-    include: { leaveType: true, reviewedBy: { select: { name: true } } },
+    include: { leaveType: true, reviewedBy: { select: { name: true } }, project: { select: { name: true } } },
     orderBy: { startDate: "asc" },
   });
 
@@ -49,6 +49,7 @@ export async function buildMemberRecordWorkbook(userId: string, year: number) {
   const headerRow = sheet.addRow([
     "Code",
     "Leave Type",
+    "Project",
     "Start Date",
     "End Date",
     "Days",
@@ -63,6 +64,7 @@ export async function buildMemberRecordWorkbook(userId: string, year: number) {
     sheet.addRow([
       r.leaveType.code,
       r.leaveType.name,
+      r.project?.name ?? "",
       r.startDate.toLocaleDateString(),
       r.endDate.toLocaleDateString(),
       daysInclusive(r.startDate, r.endDate) * r.leaveType.quotaWeight,
@@ -74,8 +76,8 @@ export async function buildMemberRecordWorkbook(userId: string, year: number) {
   }
 
   sheet.columns.forEach((col) => (col.width = 18));
-  sheet.getColumn(6).width = 35;
-  sheet.getColumn(9).width = 30;
+  sheet.getColumn(7).width = 35;
+  sheet.getColumn(10).width = 30;
 
   return workbook;
 }
@@ -98,6 +100,7 @@ export async function buildInstituteReportWorkbook(
     include: {
       leaveType: true,
       user: { select: { name: true, email: true, department: true, employeeId: true } },
+      project: { select: { name: true } },
     },
     orderBy: [{ user: { name: "asc" } }, { startDate: "asc" }],
   });
@@ -112,6 +115,7 @@ export async function buildInstituteReportWorkbook(
     "Employee ID",
     "Code",
     "Leave Type",
+    "Project",
     "Start Date",
     "End Date",
     "Days",
@@ -128,6 +132,7 @@ export async function buildInstituteReportWorkbook(
       r.user.employeeId ?? "",
       r.leaveType.code,
       r.leaveType.name,
+      r.project?.name ?? "",
       r.startDate.toLocaleDateString(),
       r.endDate.toLocaleDateString(),
       daysInclusive(r.startDate, r.endDate) * r.leaveType.quotaWeight,
@@ -137,7 +142,7 @@ export async function buildInstituteReportWorkbook(
   }
 
   sheet.columns.forEach((col) => (col.width = 16));
-  sheet.getColumn(10).width = 35;
+  sheet.getColumn(11).width = 35;
 
   return workbook;
 }
