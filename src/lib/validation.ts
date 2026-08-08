@@ -56,3 +56,7 @@ export const projectSchema = z.object({
 export const projectMemberSchema = z.object({
   userId: z.string().min(1, "Select a member"),
 });
+
+export const setPasswordSchema = z.object({
+  password: z.string().min(8, "Password must be at least 8 characters").max(200),
+});
