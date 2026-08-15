@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { reviewSchema, leaveRequestSchema } from "@/lib/validation";
 import { computeQuotaWarning } from "@/lib/quota-warning";
 import { isValidProjectForUser } from "@/lib/project-check";
+import { sendLeaveDecisionEmail } from "@/lib/email";
 
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await requireAdmin();
@@ -37,15 +38,31 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     return NextResponse.json({ error: "This request has already been reviewed" }, { status: 400 });
   }
 
+  const decision = parsed.data.action === "APPROVE" ? "APPROVED" : "REJECTED";
   const updated = await prisma.leaveRequest.update({
     where: { id },
     data: {
-      status: parsed.data.action === "APPROVE" ? "APPROVED" : "REJECTED",
+      status: decision,
       reviewedById: session.user.id,
       reviewedAt: new Date(),
       reviewNote: parsed.data.reviewNote || null,
     },
+    include: { leaveType: true, user: { select: { name: true, email: true } } },
   });
+
+  await sendLeaveDecisionEmail(
+    updated.user.email,
+    {
+      memberName: updated.user.name,
+      leaveCode: updated.leaveType.code,
+      leaveName: updated.leaveType.name,
+      startDate: updated.startDate,
+      endDate: updated.endDate,
+      reason: updated.reason,
+    },
+    decision,
+    updated.reviewNote
+  );
 
   return NextResponse.json({ request: updated });
 }

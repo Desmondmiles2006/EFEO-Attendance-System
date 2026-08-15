@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { leaveRequestSchema } from "@/lib/validation";
 import { computeQuotaWarning } from "@/lib/quota-warning";
 import { isValidProjectForUser } from "@/lib/project-check";
+import { sendLeaveSubmittedEmail, sendAdminNewRequestEmail } from "@/lib/email";
 
 export async function GET(req: Request) {
   const session = await auth();
@@ -62,10 +63,28 @@ export async function POST(req: Request) {
       projectId,
       status: "PENDING",
     },
-    include: { leaveType: true },
+    include: { leaveType: true, user: { select: { name: true, email: true } } },
   });
 
   const warning = await computeQuotaWarning(session.user.id, leaveType, start);
+
+  // Notify the member (under review) and all active admins (new request). Non-blocking on failure.
+  const info = {
+    memberName: created.user.name,
+    leaveCode: created.leaveType.code,
+    leaveName: created.leaveType.name,
+    startDate: created.startDate,
+    endDate: created.endDate,
+    reason: created.reason,
+  };
+  const admins = await prisma.user.findMany({
+    where: { role: "ADMIN", status: "ACTIVE" },
+    select: { email: true },
+  });
+  await Promise.allSettled([
+    sendLeaveSubmittedEmail(created.user.email, info),
+    sendAdminNewRequestEmail(admins.map((a) => a.email), info),
+  ]);
 
   return NextResponse.json({ request: created, warning });
 }

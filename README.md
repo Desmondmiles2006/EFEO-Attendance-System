@@ -53,6 +53,30 @@ Useful scripts:
 - `npm run db:migrate` — create/apply a new migration after editing `prisma/schema.prisma`
 - `npm run db:seed` — re-run the seed (safe to re-run, it upserts)
 
+## Email notifications (optional)
+
+Members get an email when their leave request is submitted (under review), approved,
+or denied, and admins get an email when a new request is submitted. This is **optional** —
+if the SMTP variables are unset, the app runs normally and just skips sending.
+
+To enable it with a Gmail account:
+
+1. Turn on **2-Step Verification** for the Gmail account you'll send from.
+2. Create an **App Password** at https://myaccount.google.com/apppasswords (pick "Mail").
+   Google gives you a 16-character password — use that, not your normal Gmail password.
+3. Set these variables (in `.env` locally, and in Vercel's environment variables for
+   production):
+   ```
+   SMTP_HOST=smtp.gmail.com
+   SMTP_PORT=465
+   SMTP_USER=youradmin@gmail.com
+   SMTP_PASS=the-16-char-app-password
+   EMAIL_FROM=EFEO Attendance <youradmin@gmail.com>
+   ```
+
+Gmail sends up to ~500 emails/day, which is plenty for this use. To use a different
+provider (Resend, SendGrid, etc.) just point `SMTP_*` at their SMTP host/credentials.
+
 ## Deploying (Neon + Vercel)
 
 1. Create a free Postgres database on [Neon](https://neon.tech) (or reuse your local one).
@@ -70,7 +94,8 @@ Useful scripts:
 
 ## Notes / v1 limitations
 
-- No email notifications — approvals/rejections are visible in-app only (status badges).
-- No password-reset flow yet; an admin would need to reset a member's password directly
-  in the database (via Prisma Studio) if they forget it.
+- Email notifications are opt-in (see above); without SMTP configured, status changes are
+  visible in-app only (status badges).
+- No member self-service password reset yet; an admin sets a new password for a member from
+  the Assign Leave page if they forget it.
 - Quota enforcement is "track and warn," never blocking — matches the institute's request.

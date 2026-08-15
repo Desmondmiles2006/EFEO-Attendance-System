@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { adminAssignLeaveSchema } from "@/lib/validation";
 import { computeQuotaWarning } from "@/lib/quota-warning";
 import { isValidProjectForUser } from "@/lib/project-check";
+import { sendLeaveDecisionEmail } from "@/lib/email";
 
 export async function GET(req: Request) {
   const session = await requireAdmin();
@@ -70,6 +71,21 @@ export async function POST(req: Request) {
   });
 
   const warning = await computeQuotaWarning(userId, leaveType, start);
+
+  // Admin-assigned leave is approved on creation — let the member know.
+  await sendLeaveDecisionEmail(
+    created.user.email,
+    {
+      memberName: created.user.name,
+      leaveCode: created.leaveType.code,
+      leaveName: created.leaveType.name,
+      startDate: created.startDate,
+      endDate: created.endDate,
+      reason: created.reason,
+    },
+    "APPROVED",
+    null
+  );
 
   return NextResponse.json({ request: created, warning });
 }
